@@ -77,7 +77,80 @@ export default defineType({
             title: 'Cover Image',
             type: 'image',
             options: { hotspot: true },
-            validation: (Rule) => Rule.required(),
+        }),
+        defineField({
+            name: 'coverMedia',
+            title: 'Cover Media (Image or Video)',
+            type: 'object',
+            fields: [
+                defineField({
+                    name: 'mediaType',
+                    title: 'Media Type',
+                    type: 'string',
+                    options: {
+                        list: [
+                            { title: 'Image', value: 'image' },
+                            { title: 'Video', value: 'video' },
+                        ],
+                        layout: 'radio',
+                    },
+                    initialValue: 'image',
+                    validation: (Rule) => Rule.required(),
+                }),
+                defineField({
+                    name: 'image',
+                    title: 'Image',
+                    type: 'image',
+                    options: { hotspot: true },
+                    hidden: ({ parent }) => parent?.mediaType !== 'image',
+                    validation: (Rule) =>
+                        Rule.custom((value, context) => {
+                            const parent = context.parent as { mediaType?: string } | undefined
+
+                            if (parent?.mediaType === 'image' && !value) {
+                                return 'Image is required when cover media type is image'
+                            }
+
+                            return true
+                        }),
+                }),
+                defineField({
+                    name: 'video',
+                    title: 'Video',
+                    type: 'file',
+                    options: {
+                        accept: 'video/*',
+                    },
+                    hidden: ({ parent }) => parent?.mediaType !== 'video',
+                    validation: (Rule) =>
+                        Rule.custom((value, context) => {
+                            const parent = context.parent as { mediaType?: string } | undefined
+
+                            if (parent?.mediaType === 'video' && !value) {
+                                return 'Video is required when cover media type is video'
+                            }
+
+                            return true
+                        }),
+                }),
+                defineField({
+                    name: 'poster',
+                    title: 'Video Poster',
+                    type: 'image',
+                    options: { hotspot: true },
+                    hidden: ({ parent }) => parent?.mediaType !== 'video',
+                }),
+            ],
+            validation: (Rule) =>
+                Rule.custom((value, context) => {
+                    const document = context.document as { coverImage?: unknown } | undefined
+
+                    if (!value && !document?.coverImage) {
+                        return 'Cover media or legacy cover image is required'
+                    }
+
+                    return true
+                }),
         }),
         defineField({
             name: 'heroMedia',
@@ -220,7 +293,7 @@ export default defineType({
         select: {
             title: 'title',
             client: 'client.title',
-            media: 'coverImage',
+            media: 'coverMedia.image',
         },
         prepare(selection) {
             return {
