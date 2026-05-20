@@ -5,7 +5,7 @@
   "description": "Sanity Studio for NOS agency portfolio website",
   "type": "module",
   "scripts": {
-    "dev": "sanity dev",
+    "dev": "sanity dev --port 3333",
     "start": "sanity start",
     "build": "sanity build",
     "deploy": "sanity deploy"
